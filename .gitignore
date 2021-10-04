@@ -1,0 +1,10 @@
+#data
+/data/
+/result/
+/sample_data_original_layout/
+
+# cache
+/__pycache__/
+
+# original
+SprawlterEvaluator.java

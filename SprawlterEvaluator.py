@@ -43,7 +43,7 @@ nnpens = [0.0] * len(filenames)
 nepens = [0.0] * len(filenames)
 eepens = [0.0] * len(filenames)
 
-# Calculate sprawl
+# Calculate sprawl：空間の粗密度を計算
 def calcSprawl(object1):
     sprawl = 0.0
     minx = 1.0e+30
@@ -54,6 +54,7 @@ def calcSprawl(object1):
     # 頂点ごと
     nodelist = object1['ori']['nodelist']
     for node in nodelist:
+        # Vertex v = graph.mesh.getVertex(i);：CHECK もしかしてmetaノード？
         pos = [node[CX],node[CY]] # [cx, cy]
         r = float(node[R])
         x1 = pos[0] - r
@@ -65,11 +66,12 @@ def calcSprawl(object1):
         miny = miny if miny < y1 else y1
         maxx = maxx if maxx > x1 else x1
         maxy = maxy if maxy > y1 else y1
+        # CHECK: グラフ全体の範囲を知りたいなら、maxx, maxyはx2, y2を使った方がイメージと近い
         # maxx = maxx if maxx > x2 else x2
         # maxy = maxy if maxy > y2 else y2
 
     # CHECK: sprawl = (maxx - minx) * (maxy - miny) / graph.nodes.size();の graph.nodes.size
-    # metaノードの大きさ？？
+    # metaノードの大きさ？
     sprawl = (maxx - minx) * (maxy - miny) / float(r*2)
     return sprawl
 
