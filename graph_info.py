@@ -1,4 +1,4 @@
-import pickle
+import pickle, glob, shutil
 import math
 
 # nodelistのconstants
@@ -77,6 +77,17 @@ def calc_meta_node(ori):
                 #meta_nodeの半径は、中心の座標と遠くの座標の距離 + nodeの半径
             meta_node[node_group]["r"] = calc_distance((centerX, centerY), (maxx, maxy)) + (nodelist[node][R])
 
-
-
     return meta_node
+
+
+
+def split_folder(folder_path):
+    files = glob.glob(folder_path)
+
+    for file in files:
+        if file[-3:] == "csv":
+            new_path = './result_txt/'  +  file[9:]
+            shutil.move(file, new_path)
+            print(new_path)
+
+split_folder('./result/*')
