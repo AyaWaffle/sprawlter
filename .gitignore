@@ -2,6 +2,7 @@
 /data/
 /result/
 /sample_data_original_layout/
+/sample_data/
 
 # cache
 /__pycache__/

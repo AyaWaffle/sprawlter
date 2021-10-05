@@ -18,18 +18,11 @@ maxne = 0.0
 maxee = 0.0
 # counter = 0
 
-# nodelistのconstants
-# nodelist =  [node_id, node_group, cx, cy, r, fill] のリスト
-NODE_ID = 0
-NODE_GROUP = 1
-CX = 2
-CY = 3
-R = 4
-FILL_COLOR = 5
+
 
 # グローバル変数
 # retrieve file names
-path =  "./sample_data_original_layout/*"
+path =  "./sample_data2/*"
 filenames = glob.glob(path)
 # path = './graph_23'
 # filenames = [path]
@@ -44,19 +37,18 @@ nepens = [0.0] * len(filenames)
 eepens = [0.0] * len(filenames)
 
 # Calculate sprawl：空間の粗密度を計算
-def calcSprawl(object1):
+def calcSprawl(meta_node_info):
     sprawl = 0.0
     minx = 1.0e+30
     miny = 1.0e+30
     maxx = -1.0e+30
     maxy = -1.0e+30
 
-    # 頂点ごと
-    nodelist = object1['ori']['nodelist']
-    for node in nodelist:
-        # Vertex v = graph.mesh.getVertex(i);：CHECK もしかしてmetaノード？
-        pos = [node[CX],node[CY]] # [cx, cy]
-        r = float(node[R])
+    for i in meta_node_info.keys():
+        # metaノードの情報を渡したい
+        meta_node = meta_node_info[i]
+        pos = meta_node["pos"]
+        r =  float(meta_node["r"])
         x1 = pos[0] - r
         x2 = pos[0] + r
         y1 = pos[1] - r
@@ -64,8 +56,8 @@ def calcSprawl(object1):
 
         minx = minx if minx < x1 else x1
         miny = miny if miny < y1 else y1
-        maxx = maxx if maxx > x1 else x1
-        maxy = maxy if maxy > y1 else y1
+        maxx = maxx if maxx > x2 else x2
+        maxy = maxy if maxy > y2 else y2
         # CHECK: グラフ全体の範囲を知りたいなら、maxx, maxyはx2, y2を使った方がイメージと近い
         # maxx = maxx if maxx > x2 else x2
         # maxy = maxy if maxy > y2 else y2
@@ -75,22 +67,21 @@ def calcSprawl(object1):
     sprawl = (maxx - minx) * (maxy - miny) / float(r*2)
     return sprawl
 
-def calcNodeNodePenalty(object1, phase):
+def calcNodeNodePenalty(phase, meta_node_info):
     penalty = 0.0
     p0 = 0.0
     maxnn = 0.0
 
-    nodelist = object1['ori']['nodelist']
-
     # for each vertex pair
-    for i, node1 in enumerate(nodelist):
-        pos1 = [node1[CX],node1[CY]] # [cx, cy]
-        r1 =  float(node1[R])
+    for i in meta_node_info.keys():
+        meta_node1 = meta_node_info[i]
+        pos1 = meta_node1["pos"]
+        r1 =  float(meta_node1["r"])
 
-        for j in range(i+1, len(nodelist)):
-            node2 = nodelist[j]
-            pos2 = [node2[CX],node2[CY]] # [cx, cy]
-            r2 = float(node2[R])
+        for j in range(i+1, len(meta_node_info.keys())):
+            meta_node2 = meta_node_info[j]
+            pos2 = meta_node2["pos"]
+            r2 =  float(meta_node2["r"])
 
             # calculate distance between circles
             diffr = (r1 - r2) if r1 > r2 else r2 - r1
@@ -99,7 +90,8 @@ def calcNodeNodePenalty(object1, phase):
             # print(pos2)
             
             # 二つのノードの中心間距離
-            dist = math.sqrt((pos1[0] - pos2[0]) * (pos1[0] - pos2[0]) + (pos1[1] - pos2[1]) * (pos1[1] - pos2[1]))
+            # dist = math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
+            dist = calc_distance(pos1, pos2)
             if (r1 + r2) < dist:
                 continue
 
@@ -130,7 +122,7 @@ def calcNodeNodePenalty(object1, phase):
     return penalty
 
 # Calculate node-edge overlap penalty
-def calcNodeEdgePenalty(object1, phase):
+def calcNodeEdgePenalty(object1, phase, meta_node_info):
     penalty = 0.0
     linelist = object1['ori']['linelist']
     nodelist = object1['ori']['nodelist']
@@ -149,9 +141,10 @@ def calcNodeEdgePenalty(object1, phase):
         ec = -(ea * ex1 + eb * ey1)
 
         # for each vertex
-        for node in nodelist:
-            c = [node[CX], node[CY]]
-            r = float(node[R])
+        for i, node in enumerate(nodelist):
+            meta_node = meta_node_info[nodelist[i][NODE_GROUP]]
+            c = meta_node["pos"]
+            r =  float(meta_node["r"])
             D = math.fabs(ea * c[0] + eb * c[1] + ec)
             eab = ea* ea + eb * eb
             det = eab * r * r - D * D
@@ -167,7 +160,7 @@ def calcNodeEdgePenalty(object1, phase):
                 continue
             if cx1 < ex1 and cx1 < ex2 and cx2 < ex1 and cx2 < ex2:
                 continue
-            len = math.sqrt((cx2 - cx1) * (cx2 - cx1) + (cy2 - cy1) * (cy2 - cy1))
+            len = calc_distance((cx1, cy1), (cx1, cy2))
 
             if(phase == 1):
                 maxne = maxne if maxne > len else len
@@ -266,10 +259,11 @@ def normalizePenalty():
 
 
 # Evaluate one graph
-def calcPenaltyOneGraph(object1, phase, counter):
-    sprawl = calcSprawl(object1)
-    nnpen = calcNodeNodePenalty(object1, phase)
-    nepen = calcNodeEdgePenalty(object1, phase)
+def calcPenaltyOneGraph(object1, phase, counter, meta_node_info):
+    print(object1["ori"]["nodelist"][0:4])
+    sprawl = calcSprawl(meta_node_info)
+    nnpen = calcNodeNodePenalty(phase, meta_node_info)
+    nepen = calcNodeEdgePenalty(object1, phase, meta_node_info)
     eepen = calcEdgeEdgePenalty(object1)
 
     sprawls[counter] = sprawl
@@ -282,15 +276,25 @@ def main():
     # calculate penalty (first)
     for counter, file in enumerate(filenames):
         object1 = get_object(file)
-        calcPenaltyOneGraph(object1, 1, counter)
+        meta_node_info = calc_meta_node(object1["ori"])
+        # minr = 10000.0
+        # for i in range(len(meta_node_info.keys())):
+        #     print('----------  No. ' + str(i) + '  ---------------')
+        #     # print(meta_node_info[i]["nodes"])
+        #     # prCint(meta_node_info[i]["pos"])
+        #     print(meta_node_info[i]["r"])
+        #     minr = minr if (meta_node_info[i]["r"] > 0.1 and minr < meta_node_info[i]["r"]) else meta_node_info[i]["r"]
+        # print("------- minr -----", minr)
+        calcPenaltyOneGraph(object1, 1, counter, meta_node_info)
         
         if counter % 1000 == 0:
             print(" #caclPenaltyOneGraph (phase 1) " + str(counter) + "/" + str(len(filenames)))
 
     # calculate penalty (second phase)
-    for counter in range(len(filenames)):
+    for counter, file in enumerate(filenames):
         object1 = get_object(file)
-        calcPenaltyOneGraph(object1, 2, counter)
+        meta_node_info = calc_meta_node(object1["ori"])
+        calcPenaltyOneGraph(object1, 2, counter, meta_node_info)
         
         if counter % 1000 == 0:
             print(" #caclPenaltyOneGraph (phase 2) " + str(counter) + "/" + str(len(filenames)))
