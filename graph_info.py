@@ -85,9 +85,10 @@ def split_folder(folder_path):
     files = glob.glob(folder_path)
 
     for file in files:
-        if file[-3:] == "csv":
+        if file[-3:] == "txt":
             new_path = './result_txt/'  +  file[9:]
             shutil.move(file, new_path)
             print(new_path)
 
-split_folder('./result/*')
+# csvとtxtが混じったファイルだったので、仕分けた
+# split_folder('./result/*')

@@ -252,15 +252,14 @@ def normalizePenalty():
         result[i] = NN_RATIO * nnpens[i] + NE_RATIO * nepens[i] + EE_RATIO * eepens[i]
         result2[i] = NN_RATIO * nnpens[i] + NE_RATIO * nepens[i] + EE_RATIO2 * eepens[i]
         result3[i] = NN_RATIO * nnpens[i] + NE_RATIO * nepens[i] + EE_RATIO3 * eepens[i]
-        # print("RESULT=" + result[i] + " nn=" + nnpens[i] + " ne=" + nepens[i] + " ee=" + eepens[i])
-        print(filenames[i] + "," + str(result[i]) + "," + str(result2[i]) + "," + str(result3[i]) + "," + str(nnpens[i]) + "," + str(nepens[i]) + "," + str(eepens[i]))
-
-
+    
+        # print(filenames[i] + "," + str(result[i]) + "," + str(result2[i]) + "," + str(result3[i]) + "," + str(nnpens[i]) + "," + str(nepens[i]) + "," + str(eepens[i]))
+        return result2[i]
 
 
 # Evaluate one graph
 def calcPenaltyOneGraph(object1, phase, counter, meta_node_info):
-    print(object1["ori"]["nodelist"][0:4])
+    # print(object1["ori"]["nodelist"][0:4])
     sprawl = calcSprawl(meta_node_info)
     nnpen = calcNodeNodePenalty(phase, meta_node_info)
     nepen = calcNodeEdgePenalty(object1, phase, meta_node_info)
@@ -301,7 +300,7 @@ def main():
 
 
     # normalize penalty
-    normalizePenalty()
+    res = normalizePenalty()
+    return res
 
-
-main()
+# main()
