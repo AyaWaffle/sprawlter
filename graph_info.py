@@ -81,14 +81,14 @@ def calc_meta_node(ori):
 
 
 
-def split_folder(folder_path):
+def split_folder(folder_path, file_type):
     files = glob.glob(folder_path)
 
     for file in files:
-        if file[-3:] == "txt":
-            new_path = './result_txt/'  +  file[9:]
+        if file[-3:] == file_type:
+            new_path = './result_' + file_type + '/'  +  file[9:]
             shutil.move(file, new_path)
             print(new_path)
 
 # csvとtxtが混じったファイルだったので、仕分けた
-# split_folder('./result/*')
+# split_folder('./result/*',  "png")
