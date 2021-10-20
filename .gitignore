@@ -4,6 +4,8 @@
 /result_txt/
 /sample_data_original_layout/
 /sample_data/
+/sample_data2/
+
 
 # cache
 /__pycache__/
@@ -14,4 +16,7 @@ SprawlterEvaluator.java
 # pipenv
 Pipfile
 Pipfile.lock
+visualize.py
+
+SprawlterEvaluator.py
 visualize.py
