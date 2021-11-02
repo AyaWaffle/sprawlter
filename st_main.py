@@ -9,6 +9,9 @@ df = pd.read_csv('./sprawlter_result.csv')
 st.subheader("Sprawlterの算出結果")
 st.dataframe(df.style.highlight_max(axis=0))
 
+st.markdown('nnpens: nodeとnodeの重なり,　nepens: nodeとedgeの重なり,　eepens: edgeとedgeの重なり')
+st.markdown('---')
+
 # グラフの表示
 st.subheader("グラフ表示")
 graph_imgs = glob.glob('./graph_layout/*')
