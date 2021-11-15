@@ -13,7 +13,7 @@ st.title('階層型グラフ表示')
 df = pd.read_csv('./sprawlter_result2.csv')
 # dfの表示
 st.subheader("Sprawlterの算出結果")
-st.dataframe(df.style.highlight_max(axis=0))
+st.dataframe(df.style.highlight_min(axis=0))
 
 st.markdown('nnpens: nodeとnodeの重なり,　nepens: nodeとedgeの重なり,　eepens: edgeとedgeの重なり')
 st.markdown('---')
