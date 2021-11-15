@@ -10,7 +10,7 @@ graph_imgs = glob.glob('./graph_layout/*')
 
 
 st.title('階層型グラフ表示')
-df = pd.read_csv('./sprawlter_result.csv')
+df = pd.read_csv('./sprawlter_result2.csv')
 # dfの表示
 st.subheader("Sprawlterの算出結果")
 st.dataframe(df.style.highlight_max(axis=0))
