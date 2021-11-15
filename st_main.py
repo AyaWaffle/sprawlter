@@ -16,36 +16,33 @@ st.markdown('---')
 st.subheader("グラフの比較表示")
 graph_imgs = glob.glob('./graph_layout/*')
 
+# container
+def draw_graph(key):
+    input_txt = key + ': グラフ番号(0-199)'
+    graph1 = st.number_input(input_txt, min_value=0, max_value=len(graph_imgs))
+    if 0 <= graph1 < len(graph_imgs):
+        graph_path = "./graph_layout/graph_" + str(graph1) + ".png"
+        st.image(graph_path)
+    else:
+        return st.error('0-99で入力')
+
 # 上の段
 upper_cols = st.columns(2)
 for i in range(len(upper_cols)):
-    input_txt = str(i) + ': グラフ番号(0-199)'
-    graph1 = upper_cols[i].number_input(input_txt, min_value=0, max_value=len(graph_imgs))
-    if 0 <= graph1 < len(graph_imgs):
-        graph_path = "./graph_layout/graph_" + str(graph1) + ".png"
-        upper_cols[i].image(graph_path)
-    else:
-        upper_cols[i].error('0-99で入力')
+    with upper_cols[i]:
+        draw_graph(str(i))
 
 # 下の段
 lower_cols = st.columns(2)
 for i in range(len(lower_cols)):
-    input_txt = str(i+2) + ': グラフ番号(0-199)'
-    graph1 = lower_cols[i].number_input(input_txt, min_value=0, max_value=len(graph_imgs))
-    if 0 <= graph1 < len(graph_imgs):
-        graph_path = "./graph_layout/graph_" + str(graph1) + ".png"
-        lower_cols[i].image(graph_path)
-    else:
-        lower_cols[i].error('0-99で入力')
+    with lower_cols[i]:
+        draw_graph(str(i+2))
+
 # 29番の情報が重複(複数回計算してしまっていた)
 # 最初に算出されている方を採用
 # graph_29,1736.5273476774305,1295.245848483581,853.9643492897314,356.38181771801993,497.58253157171157,882.562998387699
 
+# 大画面表示
 st.markdown('---')
 st.subheader("グラフの大画面表示")
-graph1 = st.number_input("グラフ番号(0-199)", min_value=0, max_value=len(graph_imgs))
-if 0 <= graph1 < len(graph_imgs):
-    graph_path = "./graph_layout/graph_" + str(graph1) + ".png"
-    st.image(graph_path)
-else:
-    st.error('0-99で入力')
+draw_graph('big')
