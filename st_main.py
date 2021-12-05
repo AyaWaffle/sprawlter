@@ -47,7 +47,7 @@ def draw_graph(key):
     if 0 <= graph1 < len(graph_imgs):
         graph_path = "./graph_layout/graph_" + str(graph1) + ".png"
         # グラフ番号をログ出力
-        logging.info('グラフ番号,%s', graph1)
+        logging.info('グラフ描画,%s,%s', key, graph1)
         # グラフを表示
         st.image(graph_path)
     else:
