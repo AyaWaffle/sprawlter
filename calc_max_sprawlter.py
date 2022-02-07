@@ -1,7 +1,6 @@
 import SprawlterEvaluator as sp
 from graph_info  import *
 import glob
-import math
 
 
 # 単一グラフを受け取ったら、Sprawlterを計算するようにしたい
