@@ -38,6 +38,55 @@ def calc_distance(pos1, pos2):
 
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
+# pick up meta_node info
+def calc_meta_node(ori):
+    meta_node = {}
+    nodelist = ori['nodelist']
+
+    # node_groupごとに集計
+    for node_id,node_group,_,_,_,_ in nodelist:
+        if node_group not in meta_node.keys():
+            # print('--------- make meta node No. ' + str(node_group) + '-----------------')
+            meta_node[node_group]= {
+                "nodes": [],
+                "pos": [],
+                "r": 0.0
+            }
+        meta_node[node_group]["nodes"].append(node_id)
+
+    for node_group in meta_node.keys():
+        minx = 1.0e+30
+        miny = 1.0e+30
+        maxx = -1.0e+30
+        maxy = -1.0e+30
+
+        # メタノードにノードが一つしか属さない場合
+        if len(meta_node[node_group]["nodes"]) == 1:
+            node_id = meta_node[node_group]["nodes"][0]
+            node = nodelist[node_id]
+            # nodeの情報をmeta_node辞書に格納
+            meta_node[node_group]["pos"] = [node[CX], node[CY]]
+            meta_node[node_group]["r"] = float(node[R])
+        else:
+            # メタノードの中で、最小のx、y を算出
+            for node in meta_node[node_group]["nodes"]:
+                x = nodelist[node][CX]
+                y = nodelist[node][CY]
+                minx = min(minx, x)
+                miny = min(miny, y)
+                maxx = max(maxx, x)
+                maxy = max(maxy, y)
+            
+            centerX = (maxx + minx) / 2.0
+            centerY = (maxy + miny) / 2.0
+
+            # 算出結果をmeta_node辞書に格納
+            meta_node[node_group]["pos"] = [centerX, centerY]
+                #meta_nodeの半径は、中心の座標と遠くの座標の距離 + nodeの半径
+            meta_node[node_group]["r"] = calc_distance((centerX, centerY), (maxx, maxy)) + (nodelist[node][R])
+
+    return meta_node
+
 # Calculate sprawl：空間の粗密度を計算
 def calcSprawl(meta_node_info):
     sprawl = 0.0
@@ -56,10 +105,11 @@ def calcSprawl(meta_node_info):
         y1 = pos[1] - r
         y2 = pos[1] + r
 
-        minx = minx if minx < x1 else x1
-        miny = miny if miny < y1 else y1
-        maxx = maxx if maxx > x2 else x2
-        maxy = maxy if maxy > y2 else y2
+        minx = min(minx, x1)
+        miny = min(miny, y1)
+        maxx = max(maxx, x2)
+        maxy = max(maxy, y2)
+
         # CHECK: グラフ全体の範囲を知りたいなら、maxx, maxyはx2, y2を使った方がイメージと近い
         # maxx = maxx if maxx > x2 else x2
         # maxy = maxy if maxy > y2 else y2
@@ -115,7 +165,6 @@ def calcNodeNodePenalty(phase, meta_node_info):
 
             # Add the penalty
             if phase == 1:
-                # maxnn = maxnn if maxnn > p0 else 
                 maxnn = max(maxnn, p0)
             else:
                 p0 = (1 - NN_ALPHA) * math.pow((2.0 * p0), 0.7) + NN_ALPHA * math.pow(maxnn, 0.7)
@@ -165,7 +214,6 @@ def calcNodeEdgePenalty(object1, phase, meta_node_info):
             len = calc_distance((cx1, cy1), (cx1, cy2))
 
             if(phase == 1):
-                # maxne = maxne if maxne > len else len
                 maxne = max(maxne, len)
             else:
                 len = 2.0 * (1.0 - NE_ALPHA) * len + NE_ALPHA * maxne
@@ -219,6 +267,8 @@ def calcEdgeEdgePenalty(object1):
 
 
 # Evaluate one graph
+# meta_node_infoの中でも、pos, meta_nodeのr, idがわかればOK
+# pred_yはy座標のみ？
 def calcPenaltyOneGraph(object1, phase, meta_node_info):
     # このパラメータ何？(もともとnormalizedに入っている)
     MIN = 1.0
